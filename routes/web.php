@@ -1,19 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\StudentController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', [PageController::class, 'home'])
-    ->name('home');
+Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/beranda', [PageController::class, 'home'])->name('beranda');
+Route::get('/profil-mahasiswa', [PageController::class, 'profile'])->name('profil');
+Route::get('/ide-agent', [PageController::class, 'agent'])->name('ide-agent');
+Route::post('/ide-agent', [PageController::class, 'submitIdea'])->name('ide-agent.submit');
 
-Route::get('/beranda', [PageController::class, 'home'])
-    ->name('beranda');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', DashboardController::class)
+        ->middleware('permission:dashboard.view')
+        ->name('dashboard');
 
-Route::get('/profil-mahasiswa', [PageController::class, 'profile'])
-    ->name('profil');
+    Route::resource('mahasiswa', StudentController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->parameters(['mahasiswa' => 'student'])
+        ->names('students');
+});
 
-Route::get('/ide-agent', [PageController::class, 'agent'])
-    ->name('ide-agent');
-
-Route::post('/ide-agent', [PageController::class, 'submitIdea'])
-    ->name('ide-agent.submit');
+require __DIR__ . '/auth.php';
